@@ -12,10 +12,12 @@ import {
   Clock,
   ChevronRight,
   Loader2,
-  Timer
+  Timer,
+  BookX,
 } from "lucide-react";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { PomodoroTimer } from "@/components/dashboard/PomodoroTimer";
+import { GamificationWidget } from "@/components/gamification/GamificationWidget";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -326,6 +328,43 @@ export default function Dashboard() {
             </Button>
           </section>
         )}
+
+        {/* Gamification Widget */}
+        <GamificationWidget compact />
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-3">
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={() => navigate("/errors")}
+            className="glass-card rounded-xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
+          >
+            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <BookX className="w-5 h-5 text-destructive" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-sm">Caderno de Erros</p>
+              <p className="text-xs text-muted-foreground">Revise suas falhas</p>
+            </div>
+          </motion.button>
+          
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            onClick={() => navigate("/achievements")}
+            className="glass-card rounded-xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
+          >
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-sm">Conquistas</p>
+              <p className="text-xs text-muted-foreground">Veja seu progresso</p>
+            </div>
+          </motion.button>
+        </div>
       </main>
 
       <BottomNavigation currentRoute="dashboard" />
