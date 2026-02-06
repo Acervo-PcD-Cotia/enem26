@@ -1,88 +1,42 @@
 
 
-# Plano de Correção do Sistema RPA e Melhorias
+# Renomear "ENEM 2026" para "ENEM+ 2026"
 
-## Diagnóstico Completo
+## Alteracoes necessarias
 
-### Problema Identificado no RPA
-O código em `src/hooks/useRPAReviews.ts` (linha 54) está usando `'questions'` como valor de `review_type`, mas a tabela `rpa_reviews` tem um CHECK constraint que só aceita:
-- `'flashcard'`
-- `'quiz'`
-- `'summary'`
+Substituir todas as ocorrencias de **"ENEM 2026"** por **"ENEM+ 2026"** nos seguintes arquivos:
 
-**Código problemático (linha 54)**:
-```typescript
-review_type: interval === '24h' ? 'flashcard' : 'questions', // 'questions' não é válido!
-```
+| Arquivo | Linhas afetadas |
+|---------|----------------|
+| `index.html` | Title e og:title |
+| `src/components/landing/Navbar.tsx` | Linha 31 |
+| `src/components/landing/HeroSection.tsx` | Linhas 67, 94 |
+| `src/components/landing/HowItWorksSection.tsx` | Linha 9 |
+| `src/components/landing/TestimonialsSection.tsx` | Linha 68 |
+| `src/components/landing/FAQSection.tsx` | Linha 63 |
+| `src/components/landing/CTASection.tsx` | Linhas 41, 52 |
+| `src/components/landing/CountdownTimer.tsx` | Linhas 12, 51 |
+| `src/components/landing/Footer.tsx` | Linhas 45, 49, 120 |
+| `src/pages/Auth.tsx` | Linha 148 |
+| `src/pages/Onboarding.tsx` | Linha 188 |
+| `tailwind.config.ts` | Linha 60 (comentario) |
 
-### Página de Revisões Existente
-A página `src/pages/Reviews.tsx` já existe e tem funcionalidade completa para:
-- Listar revisões pendentes, próximas e concluídas
-- Marcar revisões como concluídas
-- Adiar revisões
-- Mostrar alertas de revisões atrasadas
+**Total: 12 arquivos, ~16 ocorrencias**
 
----
+## Teste do RPA
 
-## Correções Necessárias
+A tabela `rpa_reviews` continua vazia. Apos aplicar a correcao do `review_type` (ja feita no ultimo commit), o proximo passo e testar o fluxo manualmente:
 
-### 1. Corrigir Bug do review_type
+1. Fazer login
+2. Ir para Trilhas
+3. Mudar status de um assunto para "Em revisao"
+4. Verificar se 7 registros aparecem na tabela `rpa_reviews`
 
-**Arquivo**: `src/hooks/useRPAReviews.ts`
+Nao ha mais alteracoes de codigo necessarias para o RPA -- a correcao de `'questions'` para `'quiz'` ja foi aplicada. O teste precisa ser feito pelo usuario no app.
 
-**Alteração na linha 54**:
-```typescript
-// DE:
-review_type: interval === '24h' ? 'flashcard' : 'questions',
+## Secao tecnica
 
-// PARA:
-review_type: interval === '24h' ? 'flashcard' : 'quiz',
-```
-
-Isso garante que todos os valores inseridos respeitem o constraint da tabela.
-
----
-
-### 2. Melhorar Página de Revisões (Opcional)
-
-A página atual já funciona bem. Sugestões de melhoria:
-
-1. **Adicionar data formatada** - Mostrar "Amanhã", "Em 3 dias", etc.
-2. **Adicionar filtro por disciplina** - Para encontrar revisões específicas
-3. **Card expandido com ações** - Mostrar tipo de revisão (flashcard/quiz) e permitir iniciar diretamente
-
----
-
-## Testes Após Correção
-
-Após aplicar a correção, o fluxo deve funcionar assim:
-
-1. Usuário acessa **Trilhas**
-2. Clica no status de um assunto duas vezes para mudar para "Em revisão"
-3. Sistema cria 7 revisões no banco de dados
-4. Toast de confirmação aparece: "7 revisões RPA foram criadas automaticamente"
-5. Usuário acessa página **Revisões** e vê as revisões agendadas
-
----
-
-## Seção Técnica
-
-### Arquivos a Modificar
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/hooks/useRPAReviews.ts` | Trocar `'questions'` por `'quiz'` na linha 54 |
-
-### Valores Válidos para review_type
-
-| Valor | Uso |
-|-------|-----|
-| `flashcard` | Revisão de 24h (primeira revisão) |
-| `quiz` | Revisões de 7d, 15d, 30d, 60d, 120d, 180d |
-| `summary` | Revisão de resumo (não usado atualmente) |
-
-### Verificação do Constraint no Banco
-```sql
-CHECK ((review_type = ANY (ARRAY['flashcard'::text, 'quiz'::text, 'summary'::text])))
-```
+- Busca e substituicao simples de texto em todos os arquivos listados
+- Nenhuma mudanca de logica, apenas renomeacao de marca
+- O comentario no `tailwind.config.ts` tambem sera atualizado para consistencia
 
