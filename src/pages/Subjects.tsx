@@ -11,7 +11,6 @@ import {
   Languages,
   PenTool,
   Check,
-  Clock,
   RotateCcw,
   Circle,
   Loader2
@@ -21,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
+import { useRPAReviews } from "@/hooks/useRPAReviews";
 
 interface Discipline {
   id: string;
@@ -62,6 +62,7 @@ const statusConfig = {
 export default function Subjects() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
+  const { createInitialReviews } = useRPAReviews();
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [progress, setProgress] = useState<SubjectProgress[]>([]);
@@ -130,7 +131,11 @@ export default function Subjects() {
     if (existingProgress) {
       await supabase
         .from("user_subject_progress")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString(),
+          completed_at: newStatus === 'consolidated' ? new Date().toISOString() : null,
+        })
         .eq("user_id", user.id)
         .eq("subject_id", subjectId);
     } else {
@@ -142,6 +147,11 @@ export default function Subjects() {
           status: newStatus,
           started_at: newStatus !== 'not_started' ? new Date().toISOString() : null,
         });
+    }
+
+    // Create RPA reviews when status becomes 'reviewing' or 'consolidated'
+    if (newStatus === 'reviewing' || newStatus === 'consolidated') {
+      await createInitialReviews(user.id, subjectId);
     }
 
     // Update local state
