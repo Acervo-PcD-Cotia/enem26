@@ -1,182 +1,349 @@
 
-# 🎓 ENEM 2026 - Plataforma Inteligente de Estudos
+# Plano de Implementacao Completo - ENEM 2026
 
-## Visão Geral
-Plataforma web responsiva para preparação do ENEM 2026 com sistema de revisão espaçada automática (RPA), planejamento inteligente adaptativo e gamificação para manter a motivação dos alunos.
+## Resumo da Solicitacao
 
----
-
-## 🎨 Design & Identidade Visual
-- **Paleta vibrante**: Roxo primário (#8B5CF6), verde sucesso (#10B981), laranja energia (#F97316)
-- **Visual jovem e motivador** com gradientes suaves e ícones expressivos
-- **Cards com sombras coloridas** e animações sutis para engajamento
-- **Tipografia moderna** com hierarquia clara
-- **Mobile-first** com navegação por bottom bar no celular
-
----
-
-## 🗂️ Módulos da Plataforma
-
-### 1. Landing Page de Conversão
-- Hero impactante com countdown para o ENEM 2026
-- Seção de benefícios com ícones animados
-- Depoimentos e prova social
-- CTA principal: "Criar meu plano ENEM 2026"
-- FAQ e rodapé com informações
-
-### 2. Sistema de Autenticação
-- Cadastro com email/senha e login social (Google)
-- Verificação de email
-- Recuperação de senha
-- Perfil do usuário com foto e dados
-
-### 3. Onboarding Inteligente (Wizard 5 passos)
-- **Passo 1**: Curso desejado e universidade alvo
-- **Passo 2**: Nota alvo e nível atual de conhecimento
-- **Passo 3**: Disponibilidade (dias/semana e horas/dia)
-- **Passo 4**: Autoavaliação por área do conhecimento
-- **Passo 5**: Confirmação e geração do plano personalizado
-
-### 4. Dashboard "Hoje" (Tela Principal)
-- Card principal: "O que você precisa fazer agora"
-- Lista de tarefas do dia categorizadas:
-  - 📘 Estudo de novo conteúdo
-  - 🧠 Revisões RPA pendentes (com prioridade visual)
-  - ❓ Sessão de questões
-  - ✍️ Redação (quando agendada)
-- Botões de ação: ✅ Concluir | ⏸️ Adiar | ⚠️ Tive dificuldade
-- Timer Pomodoro integrado
-- Barra de progresso diário
-- Streak de dias consecutivos
-
-### 5. Planejamento Inteligente (Calendário Multi-nível)
-- **Visão Anual**: Mapa de calor do progresso
-- **Visão Mensal**: Distribuição de conteúdos por disciplina
-- **Visão Semanal**: Detalhamento de tarefas
-- **Replanejamento automático**: Sistema redistribui tarefas atrasadas
-- Indicadores visuais de carga (leve/moderada/pesada)
-
-### 6. Sistema RPA (Revisão Programada Automática)
-- Intervalos automáticos: 24h → 7d → 15d → 30d → 60d → 120d → 180d
-- Cada revisão gera uma atividade prática:
-  - Flashcards gerados automaticamente
-  - Mini-quiz de 5 questões
-  - Resumo ativo para completar
-- Dashboard de revisões pendentes com filtros
-- Notificações de revisões críticas
-
-### 7. Trilhas por Disciplina
-- **5 áreas completas**: Matemática, Natureza, Humanas, Linguagens, Redação
-- Checklist visual de todos os assuntos do ENEM
-- Status por assunto: 🔘 Não iniciado → 🔵 Em estudo → 🟡 Em revisão → 🟢 Consolidado
-- Progresso percentual por disciplina
-- Estimativa de tempo para conclusão
-
-### 8. Banco de Questões + Métricas
-- Sessões de questões por disciplina/assunto
-- Registro de cada resposta: tempo, acerto/erro, alternativa
-- Dashboard de desempenho:
-  - Gráfico de evolução temporal
-  - Taxa de acerto por área
-  - Assuntos mais errados (ranking)
-- **IA sugere reforços** baseado nos padrões de erro
-
-### 9. Caderno de Erros Inteligente
-- Registro automático de cada erro com contexto
-- Classificação do motivo: Conteúdo | Interpretação | Atenção | Tempo
-- Transformar erro em flashcard com 1 clique
-- **IA identifica padrões** e prioriza erros recorrentes no plano
-- Filtros por disciplina, data e tipo de erro
-
-### 10. Módulo de Redação ENEM
-- Agenda automática semanal de redação
-- Banco de temas organizados por eixo temático
-- Editor de texto com contador de linhas (30 linhas)
-- Registro de redações com:
-  - Nota por competência (C1 a C5)
-  - Nota total
-  - Comentários e pontos de melhoria
-- Gráfico de evolução das notas
-
-### 11. Controle de Simulados
-- Cadastro de simulados realizados
-- Notas por área + nota geral
-- Comparativo entre simulados
-- **IA analisa resultados** e ajusta prioridades do plano
-- Meta de evolução entre simulados
-
-### 12. Roda da Aprovação (Check-in Semanal)
-- Autoavaliação semanal (1-10):
-  - Foco, Disciplina, Sono, Energia, Motivação, Constância
-- Gráfico radar do bem-estar
-- **IA gera recomendações** personalizadas:
-  - Ajustar carga de estudos
-  - Priorizar descanso
-  - Sugestões de reorganização
-
-### 13. Sistema de Gamificação
-- 🔥 Contador de streak (dias consecutivos)
-- 🏆 Selos de conquista (ex: "7 dias firme", "100 questões", "Mestre em Revisões")
-- 📊 Metas semanais com progresso
-- 💬 Mensagens motivacionais contextualizadas
-- Ranking opcional entre amigos
+O usuario solicitou 8 funcionalidades principais:
+1. Tornar bs7freitas@gmail.com superadmin
+2. Criar tour/tutorial do site
+3. Adicionar upload de materiais por materia (audio, video, mapa mental, flashcard, apresentacao)
+4. Criar comunidade de estudos
+5. Verificar logs do RPA
+6. Testar modulo de questoes
+7. Testar modulo de redacao
+8. Implementar check-in semanal (Roda da Aprovacao)
 
 ---
 
-## 🔧 Infraestrutura Técnica (Lovable Cloud)
+## Fase 1: Sistema de Administracao
 
-### Banco de Dados
-- Tabelas: usuários, perfis, planos de estudo, disciplinas, assuntos, sessões, revisões RPA, questões, erros, redações, simulados, check-ins, conquistas
-- RLS (Row Level Security) para isolamento de dados por usuário
+### 1.1 Atualizar Role do Usuario para Admin
 
-### Autenticação
-- Email/senha + Google OAuth
-- Verificação de email obrigatória
+O usuario bs7freitas@gmail.com ja existe no sistema com ID `516ebe88-b73b-4dbd-a636-0b054fa852aa`. Atualmente possui role "user". Sera atualizado para "admin".
 
-### Edge Functions + Lovable AI
-- Geração de plano personalizado no onboarding
-- Replanejamento automático de tarefas
-- Análise de padrões de erro
-- Recomendações da Roda da Aprovação
-- Sugestões de reforço baseadas em desempenho
+**Acao**: Executar SQL para atualizar role
 
----
+```sql
+UPDATE public.user_roles 
+SET role = 'admin' 
+WHERE user_id = '516ebe88-b73b-4dbd-a636-0b054fa852aa';
+```
 
-## 📱 Navegação
+### 1.2 Criar Enum "superadmin" (Opcional)
 
-### Desktop
-- Sidebar fixa com menu principal
-- Header com perfil, notificações e streak
+Se necessario distinguir entre admin e superadmin:
 
-### Mobile
-- Bottom navigation bar com 5 itens principais
-- Menu hamburger para itens secundários
-- Gestos de swipe para navegação entre tarefas
+```sql
+ALTER TYPE public.app_role ADD VALUE 'superadmin';
+```
+
+### 1.3 Criar Hook para Verificacao de Admin
+
+Criar `src/hooks/useAdmin.ts` para verificar permissoes de admin no frontend.
 
 ---
 
-## 🚀 Fluxo Principal do Usuário
-1. **Acessa Landing Page** → Clica "Criar meu plano"
-2. **Cadastra-se** → Confirma email
-3. **Completa Onboarding** → Sistema gera plano 2026
-4. **Dashboard "Hoje"** → Executa tarefas diárias
-5. **Marca conclusão** → Sistema agenda revisões RPA
-6. **Resolve questões** → Erros vão para o caderno
-7. **Check-in semanal** → Recebe recomendações da IA
-8. **Repete ciclo** → Evolui até o ENEM
+## Fase 2: Tour/Tutorial Interativo
+
+### 2.1 Nova Dependencia
+
+Adicionar biblioteca de tour interativo (react-joyride ou driver.js).
+
+### 2.2 Novos Arquivos
+
+- `src/components/tour/AppTour.tsx` - Componente principal do tour
+- `src/hooks/useTour.ts` - Hook para gerenciar estado do tour
+
+### 2.3 Passos do Tour
+
+1. **Dashboard** - "Bem-vindo! Aqui voce ve seu progresso diario"
+2. **Trilhas** - "Clique em uma disciplina para ver os temas"
+3. **Iniciar Estudo** - "Clique no circulo para mudar o status: Nao iniciado -> Em estudo -> Em revisao -> Consolidado"
+4. **Timer Pomodoro** - "Use o timer para sessoes focadas"
+5. **Revisoes RPA** - "Suas revisoes programadas aparecem aqui"
+6. **Questoes** - "Pratique com questoes de cada disciplina"
+
+### 2.4 Persistencia
+
+Salvar flag `tour_completed` no perfil do usuario.
 
 ---
 
-## 📋 Ordem de Implementação Sugerida
-1. Configuração inicial + Landing Page
-2. Autenticação e perfil de usuário
-3. Onboarding wizard + estrutura de dados
-4. Dashboard "Hoje" com tarefas básicas
-5. Sistema RPA (núcleo do produto)
-6. Trilhas por disciplina com checklist
-7. Banco de questões e métricas
-8. Caderno de erros inteligente
-9. Módulo de redação
-10. Controle de simulados
-11. Roda da aprovação + recomendações IA
-12. Gamificação e polimentos finais
+## Fase 3: Upload de Materiais por Assunto
+
+### 3.1 Criar Storage Bucket
+
+```sql
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('study-materials', 'study-materials', true);
+```
+
+### 3.2 Nova Tabela: subject_materials
+
+```sql
+CREATE TABLE public.subject_materials (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  subject_id UUID NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
+  material_type TEXT NOT NULL CHECK (material_type IN ('audio', 'video', 'mindmap', 'flashcard', 'presentation')),
+  title TEXT NOT NULL,
+  description TEXT,
+  file_url TEXT,
+  external_url TEXT,
+  source TEXT CHECK (source IN ('upload', 'youtube', 'gdrive', 'notebooklm')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE subject_materials ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own materials"
+  ON subject_materials FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own materials"
+  ON subject_materials FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own materials"
+  ON subject_materials FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own materials"
+  ON subject_materials FOR DELETE
+  USING (auth.uid() = user_id);
+```
+
+### 3.3 Novos Arquivos Frontend
+
+- `src/components/subjects/SubjectMaterials.tsx` - Modal/secao para exibir e adicionar materiais
+- `src/components/subjects/MaterialUploadDialog.tsx` - Dialog para upload
+- `src/components/subjects/MaterialCard.tsx` - Card para exibir material
+
+### 3.4 Tipos de Material Suportados
+
+| Tipo | Fonte | Formato |
+|------|-------|---------|
+| Audio | Upload/Link | mp3, wav, m4a |
+| Video | Upload/YouTube/GDrive | mp4, link |
+| Mapa Mental | Upload | pdf, png, jpg |
+| Flashcard | NotebookLM | link |
+| Apresentacao | NotebookLM/Upload | pdf, pptx, link |
+
+---
+
+## Fase 4: Comunidade de Estudos
+
+### 4.1 Novas Tabelas
+
+```sql
+-- Posts da comunidade
+CREATE TABLE public.community_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  subject_id UUID REFERENCES subjects(id),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  post_type TEXT NOT NULL CHECK (post_type IN ('question', 'help', 'resource', 'discussion')),
+  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed')),
+  upvotes INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Respostas/comentarios
+CREATE TABLE public.community_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  parent_comment_id UUID REFERENCES community_comments(id),
+  content TEXT NOT NULL,
+  is_accepted BOOLEAN DEFAULT false,
+  upvotes INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Recursos compartilhados (videos/lives)
+CREATE TABLE public.community_resources (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  subject_id UUID REFERENCES subjects(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  resource_type TEXT NOT NULL CHECK (resource_type IN ('video', 'live', 'study_group')),
+  url TEXT NOT NULL,
+  source TEXT CHECK (source IN ('upload', 'youtube', 'gdrive', 'other')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 4.2 Politicas RLS para Comunidade
+
+```sql
+-- Posts visiveis para todos usuarios autenticados
+CREATE POLICY "Authenticated users can view posts"
+  ON community_posts FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Users can create posts"
+  ON community_posts FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+```
+
+### 4.3 Novos Arquivos Frontend
+
+- `src/pages/Community.tsx` - Pagina principal da comunidade
+- `src/components/community/PostCard.tsx` - Card de post
+- `src/components/community/CreatePostDialog.tsx` - Criar novo post
+- `src/components/community/CommentThread.tsx` - Thread de comentarios
+- `src/components/community/ResourcesSection.tsx` - Secao de recursos
+
+### 4.4 Rota
+
+Adicionar `/community` ao App.tsx e BottomNavigation.
+
+---
+
+## Fase 5: Correcao do Sistema RPA
+
+### 5.1 Diagnostico
+
+O hook `useRPAReviews.ts` esta correto, mas pode haver problema com:
+1. Verificacao de reviews existentes muito restritiva
+2. Status "pending" incompativel com enum
+
+### 5.2 Correcao no Hook
+
+```typescript
+// Em useRPAReviews.ts, verificar se o insert esta usando valores corretos
+const reviews = RPA_INTERVALS.map(interval => ({
+  user_id: userId,
+  subject_id: subjectId,
+  interval: interval,
+  scheduled_date: getNextReviewDate(interval).toISOString().split('T')[0],
+  status: 'pending' as const, // Verificar se 'pending' existe no enum task_status
+  review_type: interval === '24h' ? 'flashcard' : 'questions',
+}));
+```
+
+### 5.3 Adicionar Console Logs para Debug
+
+Adicionar logs detalhados na funcao `createInitialReviews` para diagnosticar o problema.
+
+---
+
+## Fase 6: Check-in Semanal (Roda da Aprovacao)
+
+### 6.1 Tabela Existente
+
+A tabela `weekly_checkins` ja existe com os campos necessarios:
+- sleep_rating, focus_rating, energy_rating
+- motivation_rating, discipline_rating, consistency_rating
+- ai_recommendations
+
+### 6.2 Novos Arquivos Frontend
+
+- `src/pages/WeeklyCheckIn.tsx` - Pagina de check-in semanal
+- `src/components/checkin/ApprovalWheel.tsx` - Componente visual da roda
+- `src/components/checkin/RatingSlider.tsx` - Slider para cada indicador
+
+### 6.3 Integracao com IA
+
+Usar Lovable AI (google/gemini-2.5-flash) para gerar recomendacoes personalizadas baseadas nos ratings.
+
+### 6.4 Fluxo
+
+1. Usuario acessa check-in semanal
+2. Avalia cada indicador de 1-10
+3. IA processa dados e gera recomendacoes
+4. Sugestoes sao salvas e exibidas
+5. Dashboard mostra resumo semanal
+
+---
+
+## Fase 7: Testes End-to-End
+
+### 7.1 Testar Fluxo RPA
+- Login
+- Acessar Trilhas
+- Marcar assunto como "Em revisao"
+- Verificar se reviews foram criadas no banco
+
+### 7.2 Testar Modulo Questoes
+- Selecionar disciplina
+- Resolver questoes
+- Verificar feedback e estatisticas
+
+### 7.3 Testar Modulo Redacao
+- Criar nova redacao
+- Selecionar tema
+- Avaliar por competencia
+
+---
+
+## Arquitetura de Arquivos
+
+```text
+src/
+├── components/
+│   ├── tour/
+│   │   └── AppTour.tsx
+│   ├── subjects/
+│   │   ├── SubjectMaterials.tsx
+│   │   ├── MaterialUploadDialog.tsx
+│   │   └── MaterialCard.tsx
+│   ├── community/
+│   │   ├── PostCard.tsx
+│   │   ├── CreatePostDialog.tsx
+│   │   ├── CommentThread.tsx
+│   │   └── ResourcesSection.tsx
+│   └── checkin/
+│       ├── ApprovalWheel.tsx
+│       └── RatingSlider.tsx
+├── hooks/
+│   ├── useAdmin.ts
+│   ├── useTour.ts
+│   └── useWeeklyCheckIn.ts
+├── pages/
+│   ├── Community.tsx
+│   └── WeeklyCheckIn.tsx
+```
+
+---
+
+## Ordem de Implementacao
+
+1. **Imediato**: Atualizar role do admin e corrigir RPA
+2. **Fase 1**: Tour/Tutorial + Verificacao Admin
+3. **Fase 2**: Storage + Upload de Materiais
+4. **Fase 3**: Comunidade de Estudos
+5. **Fase 4**: Check-in Semanal com IA
+6. **Fase 5**: Testes completos
+
+---
+
+## Secao Tecnica
+
+### Migracao SQL Completa
+
+A migracao incluira:
+- Atualizacao do enum app_role (se necessario adicionar superadmin)
+- Criacao do bucket storage.study-materials
+- Tabela subject_materials com RLS
+- Tabelas community_posts, community_comments, community_resources com RLS
+- Atualizacao do role do usuario especifico
+
+### Dependencias a Adicionar
+
+```json
+{
+  "driver.js": "^1.3.1"
+}
+```
+
+### Edge Functions (Se Necessario)
+
+Para integracao com IA no check-in semanal, sera criada uma edge function `generate-ai-recommendations` que usa o Lovable AI.
+
