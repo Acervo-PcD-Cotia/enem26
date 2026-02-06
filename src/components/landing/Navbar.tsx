@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -59,6 +59,7 @@ export function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-2 text-foreground"
+            aria-label="Toggle menu"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -66,35 +67,38 @@ export function Navbar() {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="md:hidden border-t border-border/50 bg-background"
-        >
-          <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className="text-muted-foreground hover:text-primary transition-colors font-medium py-2"
-              >
-                {item.label}
-              </a>
-            ))}
-            <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
-              <Button variant="ghost" asChild className="w-full">
-                <Link to="/auth">Entrar</Link>
-              </Button>
-              <Button className="w-full bg-gradient-primary shadow-primary" asChild>
-                <Link to="/auth?mode=signup">Começar grátis</Link>
-              </Button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t border-border/50 bg-background overflow-hidden"
+          >
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className="text-muted-foreground hover:text-primary transition-colors font-medium py-2"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
+                <Button variant="ghost" asChild className="w-full">
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>Entrar</Link>
+                </Button>
+                <Button className="w-full bg-gradient-primary shadow-primary" asChild>
+                  <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>Começar grátis</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 }
