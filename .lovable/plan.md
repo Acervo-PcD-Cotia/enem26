@@ -1,52 +1,88 @@
 
-# Plano de Correção do Sistema RPA
 
-## Problema Identificado
-O sistema RPA não está criando revisões automáticas quando o usuário muda o status de um assunto para "Em revisão". A tabela `rpa_reviews` está vazia.
+# Plano de Correção do Sistema RPA e Melhorias
 
-## Causa Raiz
-A função `createInitialReviews` do hook `useRPAReviews` não está sendo chamada quando o status do assunto muda na página de Trilhas (Subjects).
+## Diagnóstico Completo
 
-## Solução Proposta
+### Problema Identificado no RPA
+O código em `src/hooks/useRPAReviews.ts` (linha 54) está usando `'questions'` como valor de `review_type`, mas a tabela `rpa_reviews` tem um CHECK constraint que só aceita:
+- `'flashcard'`
+- `'quiz'`
+- `'summary'`
 
-### 1. Modificar `src/pages/Subjects.tsx`
-Integrar o hook `useRPAReviews` e chamar `createInitialReviews` quando o status mudar para "reviewing".
-
+**Código problemático (linha 54)**:
 ```typescript
-// Adicionar import
-import { useRPAReviews } from "@/hooks/useRPAReviews";
-
-// No componente, adicionar:
-const { createInitialReviews } = useRPAReviews();
-
-// Na função que muda o status:
-const handleStatusChange = async (subjectId: string, newStatus: string) => {
-  // Atualizar status no banco...
-  
-  // Se o novo status for "reviewing", criar revisões RPA
-  if (newStatus === 'reviewing' && user) {
-    await createInitialReviews(user.id, subjectId);
-  }
-};
+review_type: interval === '24h' ? 'flashcard' : 'questions', // 'questions' não é válido!
 ```
 
-### 2. Verificar a Lógica de Status
-Confirmar que os valores de status usados no frontend correspondem aos valores esperados pelo hook RPA:
-- `not_started` -> Não iniciado
-- `studying` -> Em estudo  
-- `reviewing` -> Em revisão (trigger para RPA)
-- `consolidated` -> Consolidado
+### Página de Revisões Existente
+A página `src/pages/Reviews.tsx` já existe e tem funcionalidade completa para:
+- Listar revisões pendentes, próximas e concluídas
+- Marcar revisões como concluídas
+- Adiar revisões
+- Mostrar alertas de revisões atrasadas
 
-### 3. Adicionar Logs de Debug
-Manter os console.logs detalhados no hook para facilitar diagnóstico futuro.
+---
 
-## Arquivos a Modificar
-- `src/pages/Subjects.tsx` - Integrar chamada ao RPA
-- `src/hooks/useRPAReviews.ts` - Já possui logs, verificar se precisa ajustes
+## Correções Necessárias
 
-## Testes Necessários
-1. Fazer login como usuário de teste
-2. Navegar para Trilhas
-3. Clicar 2x no status de um assunto (para mudar para "reviewing")
-4. Verificar logs do console para mensagens "[RPA]"
-5. Confirmar criação de 7 registros na tabela `rpa_reviews`
+### 1. Corrigir Bug do review_type
+
+**Arquivo**: `src/hooks/useRPAReviews.ts`
+
+**Alteração na linha 54**:
+```typescript
+// DE:
+review_type: interval === '24h' ? 'flashcard' : 'questions',
+
+// PARA:
+review_type: interval === '24h' ? 'flashcard' : 'quiz',
+```
+
+Isso garante que todos os valores inseridos respeitem o constraint da tabela.
+
+---
+
+### 2. Melhorar Página de Revisões (Opcional)
+
+A página atual já funciona bem. Sugestões de melhoria:
+
+1. **Adicionar data formatada** - Mostrar "Amanhã", "Em 3 dias", etc.
+2. **Adicionar filtro por disciplina** - Para encontrar revisões específicas
+3. **Card expandido com ações** - Mostrar tipo de revisão (flashcard/quiz) e permitir iniciar diretamente
+
+---
+
+## Testes Após Correção
+
+Após aplicar a correção, o fluxo deve funcionar assim:
+
+1. Usuário acessa **Trilhas**
+2. Clica no status de um assunto duas vezes para mudar para "Em revisão"
+3. Sistema cria 7 revisões no banco de dados
+4. Toast de confirmação aparece: "7 revisões RPA foram criadas automaticamente"
+5. Usuário acessa página **Revisões** e vê as revisões agendadas
+
+---
+
+## Seção Técnica
+
+### Arquivos a Modificar
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/hooks/useRPAReviews.ts` | Trocar `'questions'` por `'quiz'` na linha 54 |
+
+### Valores Válidos para review_type
+
+| Valor | Uso |
+|-------|-----|
+| `flashcard` | Revisão de 24h (primeira revisão) |
+| `quiz` | Revisões de 7d, 15d, 30d, 60d, 120d, 180d |
+| `summary` | Revisão de resumo (não usado atualmente) |
+
+### Verificação do Constraint no Banco
+```sql
+CHECK ((review_type = ANY (ARRAY['flashcard'::text, 'quiz'::text, 'summary'::text])))
+```
+
