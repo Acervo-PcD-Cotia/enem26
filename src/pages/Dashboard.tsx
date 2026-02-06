@@ -6,15 +6,14 @@ import {
   BookOpen, 
   Brain, 
   HelpCircle, 
-  PenTool, 
   LogOut, 
-  Calendar,
   Trophy,
   Target,
   Clock,
   ChevronRight,
   Loader2
 } from "lucide-react";
+import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -208,31 +207,7 @@ export default function Dashboard() {
         </section>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border/50 px-4 py-2">
-        <div className="flex items-center justify-around">
-          <button className="flex flex-col items-center gap-1 p-2 text-primary">
-            <Flame className="w-6 h-6" />
-            <span className="text-xs font-medium">Hoje</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground">
-            <Calendar className="w-6 h-6" />
-            <span className="text-xs">Plano</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground">
-            <Brain className="w-6 h-6" />
-            <span className="text-xs">Revisões</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground">
-            <HelpCircle className="w-6 h-6" />
-            <span className="text-xs">Questões</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground">
-            <PenTool className="w-6 h-6" />
-            <span className="text-xs">Redação</span>
-          </button>
-        </div>
-      </nav>
+      <BottomNavigation currentRoute="dashboard" />
     </div>
   );
 }
