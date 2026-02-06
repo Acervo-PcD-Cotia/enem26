@@ -42,11 +42,11 @@ export function Footer() {
                 <Flame className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-bold text-xl text-gradient-primary">
-                ENEM 2026
+                ENEM+ 2026
               </span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-sm">
-              A plataforma de estudos mais inteligente para o ENEM 2026. 
+              A plataforma de estudos mais inteligente para o ENEM+ 2026. 
               Cronograma automático, revisões RPA e IA adaptativa para sua aprovação.
             </p>
             {/* Social Links */}
@@ -117,7 +117,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} ENEM 2026. Todos os direitos reservados.
+            © {currentYear} ENEM+ 2026. Todos os direitos reservados.
           </p>
           <p className="text-sm text-muted-foreground">
             Feito com 💜 para estudantes brasileiros

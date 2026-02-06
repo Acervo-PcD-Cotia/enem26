@@ -38,7 +38,7 @@ export function CTASection() {
 
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Junte-se a milhares de estudantes que já estão se preparando de forma 
-            inteligente para o ENEM 2026. Seu plano personalizado te espera.
+            inteligente para o ENEM+ 2026. Seu plano personalizado te espera.
           </p>
 
           {/* CTA Buttons */}
@@ -49,7 +49,7 @@ export function CTASection() {
               asChild
             >
               <Link to="/auth?mode=signup">
-                Criar meu plano ENEM 2026
+                Criar meu plano ENEM+ 2026
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>

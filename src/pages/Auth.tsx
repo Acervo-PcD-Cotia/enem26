@@ -145,7 +145,7 @@ export default function Auth() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary shadow-primary mb-4">
               <Flame className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-gradient-primary">ENEM 2026</h1>
+            <h1 className="text-2xl font-bold text-gradient-primary">ENEM+ 2026</h1>
             <p className="text-muted-foreground mt-2">
               {isSignUp ? "Crie sua conta" : "Entre na sua conta"}
             </p>

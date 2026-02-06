@@ -64,7 +64,7 @@ export function HeroSection() {
             className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
           >
             Seu plano diário para o{" "}
-            <span className="text-gradient-hero">ENEM 2026</span>
+            <span className="text-gradient-hero">ENEM+ 2026</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -91,7 +91,7 @@ export function HeroSection() {
               asChild
             >
               <Link to="/auth?mode=signup">
-                Criar meu plano ENEM 2026
+                Criar meu plano ENEM+ 2026
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>

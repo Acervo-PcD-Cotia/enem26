@@ -60,7 +60,7 @@ export function FAQSection() {
             Perguntas <span className="text-gradient-primary">frequentes</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Tudo que você precisa saber sobre nossa plataforma de estudos para o ENEM 2026.
+            Tudo que você precisa saber sobre nossa plataforma de estudos para o ENEM+ 2026.
           </p>
         </motion.div>
 

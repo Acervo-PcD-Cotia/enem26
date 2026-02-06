@@ -6,7 +6,7 @@ const steps = [
     step: "01",
     icon: UserPlus,
     title: "Crie sua conta",
-    description: "Em menos de 2 minutos você configura seu perfil e define seus objetivos para o ENEM 2026.",
+    description: "Em menos de 2 minutos você configura seu perfil e define seus objetivos para o ENEM+ 2026.",
   },
   {
     step: "02",
