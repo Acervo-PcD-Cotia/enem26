@@ -51,7 +51,7 @@ export function useRPAReviews() {
         interval: interval,
         scheduled_date: getNextReviewDate(interval).toISOString().split('T')[0],
         status: 'pending' as const,
-        review_type: interval === '24h' ? 'flashcard' : 'questions',
+        review_type: interval === '24h' ? 'flashcard' : 'quiz',
       }));
 
       console.log("[RPA] Inserting reviews:", reviews);
