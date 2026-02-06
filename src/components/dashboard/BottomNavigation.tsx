@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { 
   Flame, 
-  Calendar, 
   Brain, 
   BookOpen,
-  PenTool 
+  PenTool,
+  HelpCircle
 } from "lucide-react";
 
 interface BottomNavigationProps {
@@ -15,7 +15,7 @@ const navItems = [
   { id: "dashboard", label: "Hoje", icon: Flame, path: "/dashboard" },
   { id: "subjects", label: "Trilhas", icon: BookOpen, path: "/subjects" },
   { id: "reviews", label: "Revisões", icon: Brain, path: "/reviews" },
-  { id: "calendar", label: "Plano", icon: Calendar, path: "/calendar" },
+  { id: "questions", label: "Questões", icon: HelpCircle, path: "/questions" },
   { id: "essays", label: "Redação", icon: PenTool, path: "/essays" },
 ];
 
