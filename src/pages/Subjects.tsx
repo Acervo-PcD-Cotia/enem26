@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { useRPAReviews } from "@/hooks/useRPAReviews";
 import { SubjectMaterials } from "@/components/subjects/SubjectMaterials";
+import { SubjectEssentialSummary } from "@/components/subjects/SubjectEssentialSummary";
 
 interface Discipline {
   id: string;
@@ -71,6 +72,7 @@ export default function Subjects() {
   const [selectedDiscipline, setSelectedDiscipline] = useState<Discipline | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSubjectForMaterials, setSelectedSubjectForMaterials] = useState<Subject | null>(null);
+  const [selectedSubjectForSummary, setSelectedSubjectForSummary] = useState<Subject | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -304,14 +306,17 @@ export default function Subjects() {
                           <StatusIcon className={`w-5 h-5 ${statusConfig[status].color}`} />
                         </button>
                         
-                        <div className="flex-1">
+                        <button 
+                          className="flex-1 text-left"
+                          onClick={() => setSelectedSubjectForSummary(subject)}
+                        >
                           <p className={`font-medium ${status === 'consolidated' ? 'line-through text-muted-foreground' : ''}`}>
                             {subject.name}
                           </p>
                           {subject.description && (
                             <p className="text-sm text-muted-foreground">{subject.description}</p>
                           )}
-                        </div>
+                        </button>
 
                         <Button
                           variant="ghost"
@@ -351,6 +356,16 @@ export default function Subjects() {
           onOpenChange={(open) => !open && setSelectedSubjectForMaterials(null)}
           subjectId={selectedSubjectForMaterials.id}
           subjectName={selectedSubjectForMaterials.name}
+        />
+      )}
+
+      {/* Subject Essential Summary */}
+      {selectedSubjectForSummary && (
+        <SubjectEssentialSummary
+          open={!!selectedSubjectForSummary}
+          onOpenChange={(open) => !open && setSelectedSubjectForSummary(null)}
+          subjectId={selectedSubjectForSummary.id}
+          subjectName={selectedSubjectForSummary.name}
         />
       )}
     </div>

@@ -5,7 +5,6 @@ import {
   Brain,
   Clock,
   Check,
-  ChevronRight,
   AlertCircle,
   Loader2,
   Calendar,
@@ -18,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { useRPAReviews } from "@/hooks/useRPAReviews";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ReviewSession } from "@/components/reviews/ReviewSession";
 
 interface Review {
   id: string;
@@ -52,6 +52,7 @@ export default function Reviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pending");
+  const [activeSession, setActiveSession] = useState<Review | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -73,23 +74,14 @@ export default function Reviews() {
       const { data, error } = await supabase
         .from("rpa_reviews")
         .select(`
-          id,
-          subject_id,
-          interval,
-          scheduled_date,
-          status,
-          review_type,
-          subject:subjects(
-            name,
-            discipline:disciplines(name, color)
-          )
+          id, subject_id, interval, scheduled_date, status, review_type,
+          subject:subjects(name, discipline:disciplines(name, color))
         `)
         .eq("user_id", user?.id)
         .order("scheduled_date", { ascending: true });
 
       if (error) throw error;
       
-      // Transform data to match expected structure
       const transformedData = (data || []).map((review: any) => ({
         ...review,
         subject: {
@@ -109,9 +101,16 @@ export default function Reviews() {
     }
   };
 
-  const handleComplete = async (reviewId: string) => {
-    await completeReview(reviewId);
-    fetchReviews();
+  const handleStartReview = (review: Review) => {
+    setActiveSession(review);
+  };
+
+  const handleSessionComplete = async () => {
+    if (activeSession) {
+      await completeReview(activeSession.id);
+      setActiveSession(null);
+      fetchReviews();
+    }
   };
 
   const handlePostpone = async (reviewId: string) => {
@@ -172,7 +171,7 @@ export default function Reviews() {
             </Button>
             <Button
               size="sm"
-              onClick={() => handleComplete(review.id)}
+              onClick={() => handleStartReview(review)}
               className="bg-success hover:bg-success/90"
             >
               <Check className="w-4 h-4" />
@@ -242,7 +241,6 @@ export default function Reviews() {
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4 mt-4">
-            {/* Today's Reviews */}
             {todayReviews.length > 0 && (
               <section>
                 <div className="flex items-center gap-2 mb-3">
@@ -257,7 +255,6 @@ export default function Reviews() {
               </section>
             )}
 
-            {/* Overdue Reviews */}
             {overdueReviews.length > 0 && (
               <section>
                 <div className="flex items-center gap-2 mb-3">
@@ -275,12 +272,8 @@ export default function Reviews() {
             {pendingReviews.length === 0 && (
               <div className="text-center py-12">
                 <RotateCcw className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Nenhuma revisão pendente!
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Continue estudando novos conteúdos.
-                </p>
+                <p className="text-muted-foreground">Nenhuma revisão pendente!</p>
+                <p className="text-sm text-muted-foreground mt-1">Continue estudando novos conteúdos.</p>
               </div>
             )}
           </TabsContent>
@@ -292,9 +285,7 @@ export default function Reviews() {
             {upcomingReviews.length === 0 && (
               <div className="text-center py-12">
                 <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Nenhuma revisão agendada.
-                </p>
+                <p className="text-muted-foreground">Nenhuma revisão agendada.</p>
               </div>
             )}
           </TabsContent>
@@ -306,14 +297,24 @@ export default function Reviews() {
             {completedReviews.length === 0 && (
               <div className="text-center py-12">
                 <Check className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Nenhuma revisão concluída ainda.
-                </p>
+                <p className="text-muted-foreground">Nenhuma revisão concluída ainda.</p>
               </div>
             )}
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Review Session Sheet */}
+      {activeSession && (
+        <ReviewSession
+          open={!!activeSession}
+          onOpenChange={(open) => !open && setActiveSession(null)}
+          reviewId={activeSession.id}
+          subjectId={activeSession.subject_id}
+          subjectName={activeSession.subject.name}
+          onComplete={handleSessionComplete}
+        />
+      )}
 
       <BottomNavigation currentRoute="reviews" />
     </div>

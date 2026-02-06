@@ -9,19 +9,15 @@ import {
   Loader2,
   FileText,
   BarChart3,
-  Save,
   X,
-  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { useToast } from "@/hooks/use-toast";
+import { EssayGuidedFlow } from "@/components/essays/EssayGuidedFlow";
 
 interface Essay {
   id: string;
@@ -37,14 +33,6 @@ interface Essay {
   total_score: number | null;
   feedback: string | null;
 }
-
-const competencyLabels = [
-  "C1 - Norma Culta",
-  "C2 - Tema e Repertório",
-  "C3 - Argumentação",
-  "C4 - Coesão",
-  "C5 - Proposta de Intervenção",
-];
 
 const suggestedThemes = [
   "O impacto das redes sociais na saúde mental dos jovens",
@@ -63,9 +51,7 @@ export default function Essays() {
   const [isLoading, setIsLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [currentEssay, setCurrentEssay] = useState<Essay | null>(null);
-  const [essayContent, setEssayContent] = useState("");
   const [newTheme, setNewTheme] = useState("");
-  const [scores, setScores] = useState<number[]>([0, 0, 0, 0, 0]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -110,29 +96,28 @@ export default function Essays() {
     }
 
     setCurrentEssay(data);
-    setEssayContent("");
     setShowEditor(true);
     setNewTheme("");
     fetchEssays();
   };
 
-  const saveEssay = async () => {
+  const handleGuidedComplete = async (guidedData: any, content: string) => {
     if (!currentEssay) return;
-
-    const totalScore = scores.reduce((a, b) => a + b, 0);
 
     const { error } = await supabase
       .from("essays")
       .update({
-        content: essayContent,
+        content,
         submitted_at: new Date().toISOString(),
-        competency_1: scores[0],
-        competency_2: scores[1],
-        competency_3: scores[2],
-        competency_4: scores[3],
-        competency_5: scores[4],
-        total_score: totalScore,
-      })
+        thesis: guidedData.thesis,
+        argument_1: guidedData.argument_1,
+        argument_2: guidedData.argument_2,
+        intervention_agent: guidedData.intervention_agent,
+        intervention_action: guidedData.intervention_action,
+        intervention_means: guidedData.intervention_means,
+        intervention_detail: guidedData.intervention_detail,
+        intervention_purpose: guidedData.intervention_purpose,
+      } as any)
       .eq("id", currentEssay.id);
 
     if (error) {
@@ -140,7 +125,7 @@ export default function Essays() {
       return;
     }
 
-    toast({ title: "Redação salva!", description: `Nota total: ${totalScore} pontos` });
+    toast({ title: "Redação salva!", description: "Sua redação foi enviada com sucesso." });
     setShowEditor(false);
     setCurrentEssay(null);
     fetchEssays();
@@ -148,20 +133,11 @@ export default function Essays() {
 
   const openEssay = (essay: Essay) => {
     setCurrentEssay(essay);
-    setEssayContent(essay.content || "");
-    setScores([
-      essay.competency_1 || 0,
-      essay.competency_2 || 0,
-      essay.competency_3 || 0,
-      essay.competency_4 || 0,
-      essay.competency_5 || 0,
-    ]);
     setShowEditor(true);
   };
 
-  const lineCount = essayContent.split('\n').length;
   const averageScore = essays.length > 0 
-    ? Math.round(essays.filter(e => e.total_score).reduce((a, e) => a + (e.total_score || 0), 0) / essays.filter(e => e.total_score).length) 
+    ? Math.round(essays.filter(e => e.total_score).reduce((a, e) => a + (e.total_score || 0), 0) / (essays.filter(e => e.total_score).length || 1)) 
     : 0;
 
   if (loading || isLoading) {
@@ -189,7 +165,7 @@ export default function Essays() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">
-                  {showEditor ? "Escrever Redação" : "Redação ENEM"}
+                  {showEditor ? "Redação Guiada" : "Redação ENEM"}
                 </h1>
                 {!showEditor && (
                   <p className="text-sm text-muted-foreground">
@@ -198,12 +174,6 @@ export default function Essays() {
                 )}
               </div>
             </div>
-            {showEditor && (
-              <Button onClick={saveEssay} size="sm">
-                <Save className="w-4 h-4 mr-2" />
-                Salvar
-              </Button>
-            )}
           </div>
         </div>
       </header>
@@ -234,7 +204,10 @@ export default function Essays() {
 
               {/* New Essay */}
               <section className="glass-card rounded-2xl p-6">
-                <h3 className="font-semibold mb-4">Nova Redação</h3>
+                <h3 className="font-semibold mb-2">Nova Redação</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Você vai escrever em etapas: tese, argumentos, intervenção e depois o texto completo.
+                </p>
                 <div className="flex gap-2 mb-4">
                   <Input
                     placeholder="Digite um tema..."
@@ -284,6 +257,12 @@ export default function Essays() {
                                 <span className="text-success font-medium">{essay.total_score} pts</span>
                               </>
                             )}
+                            {essay.submitted_at && !essay.total_score && (
+                              <>
+                                <span>•</span>
+                                <span className="text-primary text-xs">Enviada</span>
+                              </>
+                            )}
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -306,69 +285,14 @@ export default function Essays() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
             >
-              {/* Theme */}
-              <div className="glass-card rounded-xl p-4">
-                <p className="text-sm text-muted-foreground mb-1">Tema:</p>
-                <p className="font-medium">{currentEssay?.theme}</p>
-              </div>
-
-              {/* Editor */}
-              <div className="relative">
-                <Textarea
-                  value={essayContent}
-                  onChange={(e) => setEssayContent(e.target.value)}
-                  placeholder="Escreva sua redação aqui..."
-                  className="min-h-[300px] resize-none"
+              {currentEssay && (
+                <EssayGuidedFlow
+                  theme={currentEssay.theme}
+                  onComplete={handleGuidedComplete}
+                  initialContent={currentEssay.content || ""}
                 />
-                <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
-                  {lineCount}/30 linhas
-                </div>
-              </div>
-
-              {/* Competencies Scoring */}
-              <div className="glass-card rounded-xl p-4">
-                <h4 className="font-semibold mb-4">Avaliação por Competência</h4>
-                <div className="space-y-4">
-                  {competencyLabels.map((label, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{label}</span>
-                        <span className="font-medium">{scores[i]}</span>
-                      </div>
-                      <div className="flex gap-1">
-                        {[0, 40, 80, 120, 160, 200].map((value) => (
-                          <button
-                            key={value}
-                            onClick={() => {
-                              const newScores = [...scores];
-                              newScores[i] = value;
-                              setScores(newScores);
-                            }}
-                            className={`flex-1 h-8 rounded text-xs font-medium transition-colors ${
-                              scores[i] === value
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted hover:bg-muted/80"
-                            }`}
-                          >
-                            {value}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-4 pt-4 border-t">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Nota Total:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      {scores.reduce((a, b) => a + b, 0)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

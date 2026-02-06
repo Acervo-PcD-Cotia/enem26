@@ -1,22 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookX,
-  Filter,
   Brain,
   AlertTriangle,
   Clock,
   Eye,
-  ChevronRight,
   Loader2,
   Sparkles,
-  Plus,
   BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
@@ -50,13 +45,19 @@ const errorReasonConfig = {
   time: { label: "Tempo", icon: Clock, color: "text-red-500", bg: "bg-red-500/10" },
 };
 
+const errorReasonLabelsHuman: Record<string, string> = {
+  content: "falta de conteúdo",
+  interpretation: "interpretação errada",
+  attention: "falta de atenção",
+  time: "falta de tempo",
+};
+
 export default function ErrorNotebook() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   
   const [errors, setErrors] = useState<ErrorEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedError, setSelectedError] = useState<ErrorEntry | null>(null);
   const [filterReason, setFilterReason] = useState<string | null>(null);
 
   useEffect(() => {
@@ -78,21 +79,11 @@ export default function ErrorNotebook() {
     const { data } = await supabase
       .from("question_responses")
       .select(`
-        id,
-        question_id,
-        selected_option,
-        is_correct,
-        error_reason,
-        created_at,
-        time_spent_seconds,
+        id, question_id, selected_option, is_correct, error_reason,
+        created_at, time_spent_seconds,
         question:questions(
-          question_text,
-          correct_option,
-          explanation,
-          subject:subjects(
-            name,
-            discipline:disciplines(name, color)
-          )
+          question_text, correct_option, explanation,
+          subject:subjects(name, discipline:disciplines(name, color))
         )
       `)
       .eq("user_id", user?.id)
@@ -127,26 +118,50 @@ export default function ErrorNotebook() {
       .eq("id", errorId);
     
     setErrors(prev => prev.map(e => e.id === errorId ? { ...e, error_reason: reason } : e));
-    setSelectedError(null);
   };
 
-  const getErrorStats = () => {
-    const stats = {
-      total: errors.length,
-      content: errors.filter(e => e.error_reason === 'content').length,
-      interpretation: errors.filter(e => e.error_reason === 'interpretation').length,
-      attention: errors.filter(e => e.error_reason === 'attention').length,
-      time: errors.filter(e => e.error_reason === 'time').length,
-      unclassified: errors.filter(e => !e.error_reason).length,
+  const stats = useMemo(() => ({
+    total: errors.length,
+    content: errors.filter(e => e.error_reason === 'content').length,
+    interpretation: errors.filter(e => e.error_reason === 'interpretation').length,
+    attention: errors.filter(e => e.error_reason === 'attention').length,
+    time: errors.filter(e => e.error_reason === 'time').length,
+    unclassified: errors.filter(e => !e.error_reason).length,
+  }), [errors]);
+
+  // Error profile: most common error type + most common discipline for that type
+  const errorProfile = useMemo(() => {
+    const classified = errors.filter(e => e.error_reason);
+    if (classified.length < 3) return null;
+
+    const reasonCounts: Record<string, number> = {};
+    classified.forEach(e => {
+      reasonCounts[e.error_reason!] = (reasonCounts[e.error_reason!] || 0) + 1;
+    });
+
+    const topReason = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1])[0];
+    if (!topReason) return null;
+
+    // Find top discipline for this error reason
+    const errorsOfType = classified.filter(e => e.error_reason === topReason[0]);
+    const disciplineCounts: Record<string, number> = {};
+    errorsOfType.forEach(e => {
+      const disc = e.question.subject.discipline.name;
+      disciplineCounts[disc] = (disciplineCounts[disc] || 0) + 1;
+    });
+
+    const topDiscipline = Object.entries(disciplineCounts).sort((a, b) => b[1] - a[1])[0];
+
+    return {
+      reason: topReason[0],
+      reasonLabel: errorReasonLabelsHuman[topReason[0]] || topReason[0],
+      discipline: topDiscipline?.[0] || null,
     };
-    return stats;
-  };
+  }, [errors]);
 
   const filteredErrors = filterReason 
     ? errors.filter(e => e.error_reason === filterReason)
     : errors;
-
-  const stats = getErrorStats();
 
   if (loading || isLoading) {
     return (
@@ -168,7 +183,7 @@ export default function ErrorNotebook() {
             <div>
               <h1 className="text-xl font-bold">Caderno de Erros</h1>
               <p className="text-sm text-muted-foreground">
-                {errors.length} erros registrados
+                Por que você errou? Entender isso muda tudo.
               </p>
             </div>
           </div>
@@ -176,6 +191,31 @@ export default function ErrorNotebook() {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Error Profile */}
+        {errorProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-2xl p-5 bg-gradient-to-br from-primary/5 to-destructive/5 border-l-4 border-primary"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Seu perfil de erro</p>
+                <p className="text-sm text-muted-foreground">
+                  Você erra mais por <span className="font-semibold text-foreground">{errorProfile.reasonLabel}</span>
+                  {errorProfile.discipline && (
+                    <> em <span className="font-semibold text-foreground">{errorProfile.discipline}</span></>
+                  )}
+                  . Saber disso já é metade da solução.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-2">
           {(Object.keys(errorReasonConfig) as Array<keyof typeof errorReasonConfig>).map((key) => {
@@ -197,7 +237,7 @@ export default function ErrorNotebook() {
           })}
         </div>
 
-        {/* AI Insight */}
+        {/* Classify CTA */}
         {stats.unclassified > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -207,16 +247,16 @@ export default function ErrorNotebook() {
             <div className="flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-primary" />
               <div>
-                <p className="font-medium">Classifique seus erros</p>
+                <p className="font-medium">Por que você errou? Entender isso muda tudo.</p>
                 <p className="text-sm text-muted-foreground">
-                  {stats.unclassified} erros ainda não foram classificados. Isso ajuda a identificar padrões!
+                  {stats.unclassified} erros aguardando classificação.
                 </p>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* Pattern Analysis */}
+        {/* Pattern Analysis with discipline grouping */}
         {stats.total > 5 && (
           <div className="glass-card rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
@@ -228,14 +268,31 @@ export default function ErrorNotebook() {
               {Object.entries(errorReasonConfig).map(([key, config]) => {
                 const count = stats[key as keyof typeof stats] as number;
                 const percent = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
+                
+                // Group by discipline for this error type
+                const errorsOfType = errors.filter(e => e.error_reason === key);
+                const topDisciplines: Record<string, number> = {};
+                errorsOfType.forEach(e => {
+                  const d = e.question.subject.discipline.name;
+                  topDisciplines[d] = (topDisciplines[d] || 0) + 1;
+                });
+                const topDisc = Object.entries(topDisciplines).sort((a, b) => b[1] - a[1])[0];
+
                 return (
                   <div key={key} className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center`}>
+                    <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
                       <config.icon className={`w-4 h-4 ${config.color}`} />
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between text-sm mb-1">
-                        <span>{config.label}</span>
+                        <span>
+                          {config.label}
+                          {topDisc && count > 0 && (
+                            <span className="text-muted-foreground text-xs ml-1">
+                              (mais em {topDisc[0]})
+                            </span>
+                          )}
+                        </span>
                         <span className="text-muted-foreground">{percent}%</span>
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -286,6 +343,8 @@ export default function ErrorNotebook() {
                     <p className="text-sm line-clamp-2">{error.question.question_text}</p>
                     <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                       <span>{error.question.subject.name}</span>
+                      <span>•</span>
+                      <span>{error.question.subject.discipline.name}</span>
                       <span>•</span>
                       <span>{new Date(error.created_at).toLocaleDateString("pt-BR")}</span>
                     </div>

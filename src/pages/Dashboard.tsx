@@ -5,40 +5,37 @@ import {
   Flame, 
   BookOpen, 
   Brain, 
-  HelpCircle, 
   LogOut, 
-  Trophy,
-  Target,
-  Clock,
   ChevronRight,
   Loader2,
   Timer,
-  BookX,
-  CalendarCheck,
   Sparkles,
+  RotateCcw,
+  Target,
 } from "lucide-react";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { PomodoroTimer } from "@/components/dashboard/PomodoroTimer";
-import { GamificationWidget } from "@/components/gamification/GamificationWidget";
 import { AppTour } from "@/components/tour/AppTour";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Review {
-  id: string;
-  subject: {
-    name: string;
-    discipline: { name: string; color: string };
-  };
+interface PrimaryTask {
+  type: 'overdue_review' | 'today_review' | 'next_subject';
+  title: string;
+  subtitle: string;
+  route: string;
+  color: string;
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, profile, loading, signOut } = useAuth();
   const [showPomodoro, setShowPomodoro] = useState(false);
-  const [pendingReviews, setPendingReviews] = useState<Review[]>([]);
-  const [stats, setStats] = useState({ questionsToday: 0, accuracy: 0 });
+  const [primaryTask, setPrimaryTask] = useState<PrimaryTask | null>(null);
+  const [completedToday, setCompletedToday] = useState(0);
+  const [totalToday, setTotalToday] = useState(0);
+  const [taskLoading, setTaskLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -50,57 +47,111 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      fetchDashboardData();
+      fetchPrimaryTask();
     }
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchPrimaryTask = async () => {
+    setTaskLoading(true);
     const today = new Date().toISOString().split('T')[0];
-    
-    // Fetch pending reviews for today
-    const { data: reviewsData } = await supabase
+
+    // 1. Check overdue reviews
+    const { data: overdueReviews } = await supabase
       .from("rpa_reviews")
-      .select(`
-        id,
-        subject:subjects(name, discipline:disciplines(name, color))
-      `)
+      .select("id, subject:subjects(name, discipline:disciplines(name, color))")
       .eq("user_id", user?.id)
       .eq("status", "pending")
-      .lte("scheduled_date", today)
-      .limit(5);
-    
-    if (reviewsData) {
-      const transformed = reviewsData.map((r: any) => ({
-        id: r.id,
-        subject: {
-          name: r.subject?.name || 'Assunto',
-          discipline: {
-            name: r.subject?.discipline?.name || 'Disciplina',
-            color: r.subject?.discipline?.color || '#8B5CF6',
-          },
-        },
-      }));
-      setPendingReviews(transformed);
+      .lt("scheduled_date", today)
+      .limit(1);
+
+    if (overdueReviews && overdueReviews.length > 0) {
+      const r: any = overdueReviews[0];
+      setPrimaryTask({
+        type: 'overdue_review',
+        title: `Revisão: ${r.subject?.name || 'Assunto'}`,
+        subtitle: 'Revisão atrasada — não deixe escapar!',
+        route: '/reviews',
+        color: 'destructive',
+      });
+      await fetchProgress(today);
+      setTaskLoading(false);
+      return;
     }
 
-    // Fetch question stats for today
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    
-    const { data: questionsData } = await supabase
-      .from("question_responses")
-      .select("is_correct")
+    // 2. Check today's reviews
+    const { data: todayReviews } = await supabase
+      .from("rpa_reviews")
+      .select("id, subject:subjects(name, discipline:disciplines(name, color))")
       .eq("user_id", user?.id)
-      .gte("created_at", startOfDay.toISOString());
-    
-    if (questionsData) {
-      const total = questionsData.length;
-      const correct = questionsData.filter(q => q.is_correct).length;
-      setStats({
-        questionsToday: total,
-        accuracy: total > 0 ? Math.round((correct / total) * 100) : 0,
+      .eq("status", "pending")
+      .eq("scheduled_date", today)
+      .limit(1);
+
+    if (todayReviews && todayReviews.length > 0) {
+      const r: any = todayReviews[0];
+      setPrimaryTask({
+        type: 'today_review',
+        title: `Revisão: ${r.subject?.name || 'Assunto'}`,
+        subtitle: 'Programada para hoje',
+        route: '/reviews',
+        color: 'success',
+      });
+      await fetchProgress(today);
+      setTaskLoading(false);
+      return;
+    }
+
+    // 3. Next subject in study trail
+    const { data: nextSubject } = await supabase
+      .from("user_subject_progress")
+      .select("subject:subjects(name, discipline:disciplines(name, color))")
+      .eq("user_id", user?.id)
+      .eq("status", "studying")
+      .limit(1);
+
+    if (nextSubject && nextSubject.length > 0) {
+      const s: any = nextSubject[0];
+      setPrimaryTask({
+        type: 'next_subject',
+        title: s.subject?.name || 'Próximo assunto',
+        subtitle: 'Continue de onde parou',
+        route: '/subjects',
+        color: 'primary',
+      });
+    } else {
+      setPrimaryTask({
+        type: 'next_subject',
+        title: 'Comece uma trilha de estudo',
+        subtitle: 'Escolha um assunto para estudar',
+        route: '/subjects',
+        color: 'primary',
       });
     }
+
+    await fetchProgress(today);
+    setTaskLoading(false);
+  };
+
+  const fetchProgress = async (today: string) => {
+    // Count today's completed reviews + sessions
+    const { count: completedReviews } = await supabase
+      .from("rpa_reviews")
+      .select("id", { count: 'exact', head: true })
+      .eq("user_id", user?.id)
+      .eq("status", "completed")
+      .eq("completed_date", today);
+
+    const { count: pendingReviews } = await supabase
+      .from("rpa_reviews")
+      .select("id", { count: 'exact', head: true })
+      .eq("user_id", user?.id)
+      .eq("status", "pending")
+      .lte("scheduled_date", today);
+
+    const done = completedReviews || 0;
+    const pending = pendingReviews || 0;
+    setCompletedToday(done);
+    setTotalToday(done + pending);
   };
 
   const handleSignOut = async () => {
@@ -116,20 +167,10 @@ export default function Dashboard() {
     );
   }
 
-  // Mock data for today's tasks
-  const todayTasks = [
-    { id: 1, type: "study", title: "Funções Quadráticas", discipline: "Matemática", duration: "45 min", icon: BookOpen, color: "bg-primary" },
-    { id: 2, type: "rpa_review", title: "Revisão: Cinemática", discipline: "Física", duration: "20 min", icon: Brain, color: "bg-success" },
-    { id: 3, type: "questions", title: "10 Questões de História", discipline: "Humanas", duration: "30 min", icon: HelpCircle, color: "bg-energy" },
-  ];
-
-  const completedToday = 2;
-  const totalToday = 5;
-  const progressPercent = (completedToday / totalToday) * 100;
+  const progressPercent = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Interactive Tour */}
       <AppTour />
 
       {/* Header */}
@@ -146,7 +187,16 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Discrete check-in icon */}
+              <button
+                onClick={() => navigate("/checkin")}
+                className="w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+                title="Check-in Semanal"
+              >
+                <Sparkles className="w-4 h-4 text-muted-foreground" />
+              </button>
+
               {/* Streak */}
               <div className="flex items-center gap-1.5 bg-energy/10 px-3 py-1.5 rounded-full">
                 <Flame className="w-4 h-4 text-energy" />
@@ -205,15 +255,14 @@ export default function Dashboard() {
           )}
         </AnimatePresence>
 
-        {/* Today's Progress Card */}
+        {/* Day Progress - simplified */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-2xl p-6 bg-gradient-to-br from-primary/5 to-success/5"
+          className="glass-card rounded-2xl p-5"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-xl font-bold">Hoje</h2>
               <p className="text-sm text-muted-foreground">
                 {new Date().toLocaleDateString("pt-BR", { 
                   weekday: "long", 
@@ -222,175 +271,76 @@ export default function Dashboard() {
                 })}
               </p>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-primary">{completedToday}/{totalToday}</p>
-              <p className="text-sm text-muted-foreground">tarefas</p>
-            </div>
+            {totalToday > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Target className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">{completedToday}/{totalToday}</span>
+              </div>
+            )}
           </div>
           
-          {/* Progress Bar */}
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full bg-gradient-primary rounded-full"
-            />
-          </div>
+          {totalToday > 0 && (
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="h-full bg-gradient-primary rounded-full"
+              />
+            </div>
+          )}
         </motion.div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="glass-card rounded-xl p-4 text-center"
-          >
-            <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
-            <p className="text-lg font-bold">{stats.questionsToday}</p>
-            <p className="text-xs text-muted-foreground">questões</p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card rounded-xl p-4 text-center"
-          >
-            <Target className="w-6 h-6 text-success mx-auto mb-2" />
-            <p className="text-lg font-bold">{stats.accuracy}%</p>
-            <p className="text-xs text-muted-foreground">acertos</p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="glass-card rounded-xl p-4 text-center"
-          >
-            <Trophy className="w-6 h-6 text-energy mx-auto mb-2" />
-            <p className="text-lg font-bold">{pendingReviews.length}</p>
-            <p className="text-xs text-muted-foreground">revisões</p>
-          </motion.div>
-        </div>
-
-        {/* Today's Tasks */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">O que fazer agora</h3>
-            <Button variant="ghost" size="sm" className="text-primary" onClick={() => navigate("/subjects")}>
-              Ver trilhas
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {todayTasks.map((task, index) => (
-              <motion.div
-                key={task.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className="glass-card rounded-xl p-4 flex items-center gap-4 hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => {
-                  if (task.type === "rpa_review") navigate("/reviews");
-                  else if (task.type === "questions") navigate("/questions");
-                  else navigate("/subjects");
-                }}
-              >
-                <div className={`w-12 h-12 rounded-xl ${task.color}/10 flex items-center justify-center`}>
-                  <task.icon className={`w-6 h-6 ${task.color === "bg-primary" ? "text-primary" : task.color === "bg-success" ? "text-success" : "text-energy"}`} />
+        {/* PRIMARY TASK — Focus Absolute */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          {taskLoading ? (
+            <div className="glass-card rounded-2xl p-8 text-center">
+              <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+            </div>
+          ) : primaryTask ? (
+            <button
+              onClick={() => navigate(primaryTask.route)}
+              className={`w-full glass-card rounded-2xl p-6 text-left hover:shadow-lg transition-all border-l-4 ${
+                primaryTask.color === 'destructive' 
+                  ? 'border-destructive bg-destructive/5' 
+                  : primaryTask.color === 'success'
+                  ? 'border-success bg-success/5'
+                  : 'border-primary bg-primary/5'
+              }`}
+            >
+              <p className="text-sm text-muted-foreground mb-2">
+                Faça isso agora. O resto vem depois.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                  primaryTask.color === 'destructive' 
+                    ? 'bg-destructive/10' 
+                    : primaryTask.color === 'success'
+                    ? 'bg-success/10'
+                    : 'bg-primary/10'
+                }`}>
+                  {primaryTask.type === 'next_subject' 
+                    ? <BookOpen className={`w-7 h-7 ${
+                        primaryTask.color === 'primary' ? 'text-primary' : 'text-success'
+                      }`} />
+                    : primaryTask.type === 'overdue_review'
+                    ? <RotateCcw className="w-7 h-7 text-destructive" />
+                    : <Brain className="w-7 h-7 text-success" />
+                  }
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium">{task.title}</p>
-                  <p className="text-sm text-muted-foreground">{task.discipline}</p>
+                  <p className="text-lg font-semibold">{primaryTask.title}</p>
+                  <p className="text-sm text-muted-foreground">{primaryTask.subtitle}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">{task.duration}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Pending Reviews */}
-        {pendingReviews.length > 0 && (
-          <section className="glass-card rounded-2xl p-6 bg-success/5 border-success/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
-                <Brain className="w-5 h-5 text-success" />
+                <ChevronRight className="w-6 h-6 text-muted-foreground" />
               </div>
-              <div>
-                <h3 className="font-semibold">Revisões RPA Pendentes</h3>
-                <p className="text-sm text-muted-foreground">{pendingReviews.length} revisões para hoje</p>
-              </div>
-            </div>
-            
-            <Button 
-              className="w-full bg-success hover:bg-success/90 text-white"
-              onClick={() => navigate("/reviews")}
-            >
-              Iniciar revisões
-            </Button>
-          </section>
-        )}
-
-        {/* Gamification Widget */}
-        <div data-tour="gamification">
-          <GamificationWidget compact />
-        </div>
-
-        {/* Weekly Check-in Banner */}
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={() => navigate("/checkin")}
-          className="w-full glass-card rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow bg-gradient-to-r from-primary/5 to-success/5"
-        >
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="font-semibold">Check-in Semanal</p>
-            <p className="text-sm text-muted-foreground">Avalie seu desempenho e receba dicas personalizadas</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </motion.button>
-
-        {/* Quick Links */}
-        <div className="grid grid-cols-2 gap-3">
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={() => navigate("/errors")}
-            className="glass-card rounded-xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
-          >
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <BookX className="w-5 h-5 text-destructive" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Caderno de Erros</p>
-              <p className="text-xs text-muted-foreground">Revise suas falhas</p>
-            </div>
-          </motion.button>
-          
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            onClick={() => navigate("/achievements")}
-            className="glass-card rounded-xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
-          >
-            <div className="w-10 h-10 rounded-lg bg-energy/10 flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-energy" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-sm">Conquistas</p>
-              <p className="text-xs text-muted-foreground">Veja seu progresso</p>
-            </div>
-          </motion.button>
-        </div>
+            </button>
+          ) : null}
+        </motion.div>
       </main>
 
       <BottomNavigation currentRoute="dashboard" />
