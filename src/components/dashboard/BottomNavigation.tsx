@@ -4,7 +4,7 @@ import {
   Brain, 
   BookOpen,
   PenTool,
-  HelpCircle
+  Users
 } from "lucide-react";
 
 interface BottomNavigationProps {
@@ -15,7 +15,7 @@ const navItems = [
   { id: "dashboard", label: "Hoje", icon: Flame, path: "/dashboard" },
   { id: "subjects", label: "Trilhas", icon: BookOpen, path: "/subjects" },
   { id: "reviews", label: "Revisões", icon: Brain, path: "/reviews" },
-  { id: "questions", label: "Questões", icon: HelpCircle, path: "/questions" },
+  { id: "community", label: "Comunidade", icon: Users, path: "/community" },
   { id: "essays", label: "Redação", icon: PenTool, path: "/essays" },
 ];
 
@@ -34,6 +34,7 @@ export function BottomNavigation({ currentRoute }: BottomNavigationProps) {
               className={`flex flex-col items-center gap-1 p-2 transition-colors ${
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
+              data-tour={item.id}
             >
               <item.icon className="w-6 h-6" />
               <span className={`text-xs ${isActive ? "font-medium" : ""}`}>{item.label}</span>

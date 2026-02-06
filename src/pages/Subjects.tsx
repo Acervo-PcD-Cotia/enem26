@@ -13,7 +13,8 @@ import {
   Check,
   RotateCcw,
   Circle,
-  Loader2
+  Loader2,
+  FolderOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -21,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { useRPAReviews } from "@/hooks/useRPAReviews";
+import { SubjectMaterials } from "@/components/subjects/SubjectMaterials";
 
 interface Discipline {
   id: string;
@@ -68,6 +70,7 @@ export default function Subjects() {
   const [progress, setProgress] = useState<SubjectProgress[]>([]);
   const [selectedDiscipline, setSelectedDiscipline] = useState<Discipline | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedSubjectForMaterials, setSelectedSubjectForMaterials] = useState<Subject | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -296,6 +299,7 @@ export default function Subjects() {
                               ? 'bg-blue-500/10 border-blue-500'
                               : 'border-muted-foreground/30'
                           }`}
+                          data-tour="subject-status"
                         >
                           <StatusIcon className={`w-5 h-5 ${statusConfig[status].color}`} />
                         </button>
@@ -308,6 +312,15 @@ export default function Subjects() {
                             <p className="text-sm text-muted-foreground">{subject.description}</p>
                           )}
                         </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedSubjectForMaterials(subject)}
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <FolderOpen className="w-5 h-5" />
+                        </Button>
                         
                         <span className={`text-xs px-2 py-1 rounded-full ${
                           status === 'consolidated' 
@@ -330,6 +343,16 @@ export default function Subjects() {
       </main>
 
       <BottomNavigation currentRoute="subjects" />
+
+      {/* Subject Materials Sheet */}
+      {selectedSubjectForMaterials && (
+        <SubjectMaterials
+          open={!!selectedSubjectForMaterials}
+          onOpenChange={(open) => !open && setSelectedSubjectForMaterials(null)}
+          subjectId={selectedSubjectForMaterials.id}
+          subjectName={selectedSubjectForMaterials.name}
+        />
+      )}
     </div>
   );
 }
