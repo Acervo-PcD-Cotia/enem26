@@ -44,6 +44,145 @@ export type Database = {
         }
         Relationships: []
       }
+      community_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_accepted: boolean | null
+          parent_comment_id: string | null
+          post_id: string
+          upvotes: number | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_accepted?: boolean | null
+          parent_comment_id?: string | null
+          post_id: string
+          upvotes?: number | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_accepted?: boolean | null
+          parent_comment_id?: string | null
+          post_id?: string
+          upvotes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "community_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_type: string
+          status: string | null
+          subject_id: string | null
+          title: string
+          updated_at: string | null
+          upvotes: number | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_type: string
+          status?: string | null
+          subject_id?: string | null
+          title: string
+          updated_at?: string | null
+          upvotes?: number | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_type?: string
+          status?: string | null
+          subject_id?: string | null
+          title?: string
+          updated_at?: string | null
+          upvotes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_resources: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          resource_type: string
+          source: string | null
+          subject_id: string | null
+          title: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          resource_type: string
+          source?: string | null
+          subject_id?: string | null
+          title: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          resource_type?: string
+          source?: string | null
+          subject_id?: string | null
+          title?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_resources_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disciplines: {
         Row: {
           code: string
@@ -229,6 +368,7 @@ export type Database = {
           target_course: string | null
           target_score: number | null
           target_university: string | null
+          tour_completed: boolean | null
           updated_at: string
           user_id: string
         }
@@ -246,6 +386,7 @@ export type Database = {
           target_course?: string | null
           target_score?: number | null
           target_university?: string | null
+          tour_completed?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -263,6 +404,7 @@ export type Database = {
           target_course?: string | null
           target_score?: number | null
           target_university?: string | null
+          tour_completed?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -462,6 +604,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "study_sessions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_materials: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          external_url: string | null
+          file_url: string | null
+          id: string
+          material_type: string
+          source: string | null
+          subject_id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          external_url?: string | null
+          file_url?: string | null
+          id?: string
+          material_type: string
+          source?: string | null
+          subject_id: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          external_url?: string | null
+          file_url?: string | null
+          id?: string
+          material_type?: string
+          source?: string | null
+          subject_id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_materials_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"

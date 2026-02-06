@@ -14,10 +14,13 @@ import {
   Loader2,
   Timer,
   BookX,
+  CalendarCheck,
+  Sparkles,
 } from "lucide-react";
 import { BottomNavigation } from "@/components/dashboard/BottomNavigation";
 import { PomodoroTimer } from "@/components/dashboard/PomodoroTimer";
 import { GamificationWidget } from "@/components/gamification/GamificationWidget";
+import { AppTour } from "@/components/tour/AppTour";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -126,6 +129,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Interactive Tour */}
+      <AppTour />
+
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-4 py-4">
@@ -183,6 +189,7 @@ export default function Dashboard() {
               exit={{ opacity: 0 }}
               onClick={() => setShowPomodoro(true)}
               className="w-full glass-card rounded-xl p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+              data-tour="pomodoro"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -330,7 +337,26 @@ export default function Dashboard() {
         )}
 
         {/* Gamification Widget */}
-        <GamificationWidget compact />
+        <div data-tour="gamification">
+          <GamificationWidget compact />
+        </div>
+
+        {/* Weekly Check-in Banner */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => navigate("/checkin")}
+          className="w-full glass-card rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow bg-gradient-to-r from-primary/5 to-success/5"
+        >
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-semibold">Check-in Semanal</p>
+            <p className="text-sm text-muted-foreground">Avalie seu desempenho e receba dicas personalizadas</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+        </motion.button>
 
         {/* Quick Links */}
         <div className="grid grid-cols-2 gap-3">
@@ -356,8 +382,8 @@ export default function Dashboard() {
             onClick={() => navigate("/achievements")}
             className="glass-card rounded-xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
           >
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-amber-500" />
+            <div className="w-10 h-10 rounded-lg bg-energy/10 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-energy" />
             </div>
             <div className="text-left">
               <p className="font-medium text-sm">Conquistas</p>

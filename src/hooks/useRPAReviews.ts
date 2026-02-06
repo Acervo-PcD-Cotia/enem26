@@ -24,16 +24,23 @@ export function useRPAReviews() {
 
   const createInitialReviews = async (userId: string, subjectId: string) => {
     try {
+      console.log("[RPA] Creating reviews for:", { userId, subjectId });
+
       // Check if reviews already exist for this subject
-      const { data: existingReviews } = await supabase
+      const { data: existingReviews, error: checkError } = await supabase
         .from("rpa_reviews")
         .select("id")
         .eq("user_id", userId)
         .eq("subject_id", subjectId)
         .limit(1);
 
+      if (checkError) {
+        console.error("[RPA] Error checking existing reviews:", checkError);
+        throw checkError;
+      }
+
       if (existingReviews && existingReviews.length > 0) {
-        console.log("Reviews already exist for this subject");
+        console.log("[RPA] Reviews already exist for this subject, skipping");
         return;
       }
 
@@ -47,16 +54,26 @@ export function useRPAReviews() {
         review_type: interval === '24h' ? 'flashcard' : 'questions',
       }));
 
-      const { error } = await supabase.from("rpa_reviews").insert(reviews);
+      console.log("[RPA] Inserting reviews:", reviews);
+
+      const { data: insertedData, error } = await supabase
+        .from("rpa_reviews")
+        .insert(reviews)
+        .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("[RPA] Insert error:", error);
+        throw error;
+      }
+
+      console.log("[RPA] Reviews created successfully:", insertedData);
 
       toast({
         title: "Revisões agendadas!",
         description: "7 revisões RPA foram criadas automaticamente para este assunto.",
       });
     } catch (error) {
-      console.error("Error creating RPA reviews:", error);
+      console.error("[RPA] Error creating RPA reviews:", error);
       toast({
         title: "Erro ao criar revisões",
         description: "Não foi possível agendar as revisões automáticas.",

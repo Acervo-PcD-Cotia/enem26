@@ -14,6 +14,8 @@ import Questions from "./pages/Questions";
 import Essays from "./pages/Essays";
 import ErrorNotebook from "./pages/ErrorNotebook";
 import Achievements from "./pages/Achievements";
+import Community from "./pages/Community";
+import WeeklyCheckIn from "./pages/WeeklyCheckIn";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const App = () => (
             <Route path="/essays" element={<Essays />} />
             <Route path="/errors" element={<ErrorNotebook />} />
             <Route path="/achievements" element={<Achievements />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/checkin" element={<WeeklyCheckIn />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
