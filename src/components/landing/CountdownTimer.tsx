@@ -9,7 +9,7 @@ interface TimeLeft {
 }
 
 export function CountdownTimer() {
-  // ENEM 2026 - Primeiro domingo de novembro de 2026 (estimativa: 1 de novembro de 2026)
+  // ENEM+ 2026 - Primeiro domingo de novembro de 2026 (estimativa: 1 de novembro de 2026)
   const enemDate = new Date("2026-11-01T00:00:00");
   
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
@@ -48,7 +48,7 @@ export function CountdownTimer() {
   return (
     <div className="bg-card rounded-2xl border border-border p-6 shadow-card max-w-lg mx-auto">
       <p className="text-sm text-muted-foreground mb-4 font-medium">
-        ⏱️ Tempo até o ENEM 2026
+        ⏱️ Tempo até o ENEM+ 2026
       </p>
       <div className="grid grid-cols-4 gap-3">
         {timeBlocks.map((block, index) => (

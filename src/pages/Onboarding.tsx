@@ -185,7 +185,7 @@ export default function Onboarding() {
               <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Flame className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold text-gradient-primary">ENEM 2026</span>
+              <span className="font-semibold text-gradient-primary">ENEM+ 2026</span>
             </div>
             <span className="text-sm text-muted-foreground">
               Passo {currentStep} de 5

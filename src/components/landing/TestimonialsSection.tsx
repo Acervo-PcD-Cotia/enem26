@@ -65,7 +65,7 @@ export function TestimonialsSection() {
             O que nossos <span className="text-gradient-primary">alunos</span> dizem
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Mais de 5.000 alunos já estão se preparando para o ENEM 2026 com nossa plataforma.
+            Mais de 5.000 alunos já estão se preparando para o ENEM+ 2026 com nossa plataforma.
           </p>
         </motion.div>
 
