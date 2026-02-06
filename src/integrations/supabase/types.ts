@@ -215,6 +215,8 @@ export type Database = {
       }
       essays: {
         Row: {
+          argument_1: string | null
+          argument_2: string | null
           competency_1: number | null
           competency_2: number | null
           competency_3: number | null
@@ -224,14 +226,22 @@ export type Database = {
           created_at: string
           feedback: string | null
           id: string
+          intervention_action: string | null
+          intervention_agent: string | null
+          intervention_detail: string | null
+          intervention_means: string | null
+          intervention_purpose: string | null
           scheduled_date: string
           submitted_at: string | null
           theme: string
+          thesis: string | null
           total_score: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          argument_1?: string | null
+          argument_2?: string | null
           competency_1?: number | null
           competency_2?: number | null
           competency_3?: number | null
@@ -241,14 +251,22 @@ export type Database = {
           created_at?: string
           feedback?: string | null
           id?: string
+          intervention_action?: string | null
+          intervention_agent?: string | null
+          intervention_detail?: string | null
+          intervention_means?: string | null
+          intervention_purpose?: string | null
           scheduled_date: string
           submitted_at?: string | null
           theme: string
+          thesis?: string | null
           total_score?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          argument_1?: string | null
+          argument_2?: string | null
           competency_1?: number | null
           competency_2?: number | null
           competency_3?: number | null
@@ -258,9 +276,15 @@ export type Database = {
           created_at?: string
           feedback?: string | null
           id?: string
+          intervention_action?: string | null
+          intervention_agent?: string | null
+          intervention_detail?: string | null
+          intervention_means?: string | null
+          intervention_purpose?: string | null
           scheduled_date?: string
           submitted_at?: string | null
           theme?: string
+          thesis?: string | null
           total_score?: number | null
           updated_at?: string
           user_id?: string
@@ -656,6 +680,35 @@ export type Database = {
             foreignKeyName: "subject_materials_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_summaries: {
+        Row: {
+          content: string
+          generated_at: string | null
+          id: string
+          subject_id: string
+        }
+        Insert: {
+          content: string
+          generated_at?: string | null
+          id?: string
+          subject_id: string
+        }
+        Update: {
+          content?: string
+          generated_at?: string | null
+          id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_summaries_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: true
             referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
