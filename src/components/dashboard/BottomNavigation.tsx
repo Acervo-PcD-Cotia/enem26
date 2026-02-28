@@ -4,7 +4,8 @@ import {
   Brain, 
   BookOpen,
   PenTool,
-  Users
+  Users,
+  GraduationCap
 } from "lucide-react";
 
 interface BottomNavigationProps {
@@ -16,6 +17,7 @@ const navItems = [
   { id: "subjects", label: "Trilhas", icon: BookOpen, path: "/subjects" },
   { id: "reviews", label: "Revisões", icon: Brain, path: "/reviews" },
   { id: "community", label: "Comunidade", icon: Users, path: "/community" },
+  { id: "tutors", label: "Tutores", icon: GraduationCap, path: "/tutors" },
   { id: "essays", label: "Redação", icon: PenTool, path: "/essays" },
 ];
 
