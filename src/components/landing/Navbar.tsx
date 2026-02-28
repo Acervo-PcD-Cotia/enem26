@@ -11,6 +11,7 @@ export function Navbar() {
     { label: "Como funciona", href: "#como-funciona" },
     { label: "Benefícios", href: "#beneficios" },
     { label: "Depoimentos", href: "#depoimentos" },
+    { label: "Tutores", href: "/tutors" },
     { label: "FAQ", href: "#faq" },
   ];
 
