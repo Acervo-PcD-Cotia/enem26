@@ -1,52 +1,54 @@
 
-# Adicionar Pagina "Tutores ENEM+ 2026"
+# Atualizar Pagina "Tutores" com Novo Conteudo e Guia de Uso
 
 ## Resumo
 
-Criar uma nova pagina `/tutores` com 3 cards interativos que direcionam o aluno para assistentes de IA no NotebookLM. Adicionar link no menu de navegacao (Navbar da landing page e BottomNavigation do app).
+Atualizar a pagina `/tutors` existente com novos titulos, descricoes e CTAs para os 3 cards, e adicionar uma secao "Guia Rapido" abaixo dos cards com dicas de uso e exemplos de prompts para copiar e colar.
 
 ---
 
-## Arquivos a criar
+## Arquivo a modificar
 
 ### `src/pages/Tutors.tsx`
-Nova pagina com:
-- Titulo: "Converse com seu Tutor ENEM+ 2026"
-- Subtitulo explicativo
-- 3 cards responsivos (3 colunas desktop, 1 mobile)
-- Cada card com: emoji, nome, especialidade, descricao curta, botao "Conversar agora", badge "IA Gratuita"
-- Links abrem em nova aba com `target="_blank" rel="noopener noreferrer"`
-- Hover animado com framer-motion (elevacao + brilho)
-- BottomNavigation incluida na pagina para navegacao do app
 
-Dados dos 3 tutores:
-1. Tutor Geral ENEM -- Filosofia, Biologia, Redacao e Literatura
-2. Tutor ProEnem 2026 -- Redacao, Ciencias Humanas, Quimica e Geografia
-3. Tutor Plano de Estudos -- Organizacao, Cronograma e Estrategias
+**1) Atualizar dados dos 3 tutores:**
 
----
+| Campo | Card 1 | Card 2 | Card 3 |
+|-------|--------|--------|--------|
+| Nome | Tutor Especialista em Fundamentos | Mentor de Estrategia e Atualidades | Treinador de Taticas e Cronograma |
+| Especialidade | Literatura, Biologia, Sociologia e Fisica | Geopolitica, Historia e Matematica | TRI, Produtividade e Interpretacao |
+| Descricao | Domine os temas que mais caem. Ideal para explicacoes diretas de conceitos complexos e repertorios culturais para sua redacao. | Alem da teoria, ajuda a entender o SISU, notas de corte e como usar temas atuais para ampliar seu repertorio sociocultural. | Aprenda a priorizar o que importa, criar cronogramas flexiveis e dominar tecnicas de interpretacao para ganhar tempo na prova. |
+| CTA | Iniciar Conversa | Refinar Estrategia | Montar meu Plano |
+| Emoji | (manter existentes) | (manter existentes) | (manter existentes) |
 
-## Arquivos a modificar
+Os 3 links NotebookLM permanecem os mesmos.
 
-### `src/App.tsx`
-- Importar `Tutors` page
-- Adicionar rota `<Route path="/tutors" element={<Tutors />} />`
+**2) Atualizar header da pagina:**
 
-### `src/components/dashboard/BottomNavigation.tsx`
-- Adicionar item "Tutores" com icone `GraduationCap` do lucide-react
-- Path: `/tutors`
-- Total de itens passa de 5 para 6
+- Titulo: "Central de Tutores IA -- ENEM 2026"
+- Subtitulo: "Escolha o tutor ideal para a sua duvida. Cada um foi treinado com milhares de horas de conteudo especializado para o ENEM 2026. E gratuito e esta disponivel agora."
 
-### `src/components/landing/Navbar.tsx`
-- Adicionar "Tutores" nos `navItems` da landing page com `href: "/tutors"`
+**3) Adicionar secao "Guia Rapido" abaixo dos cards:**
+
+Nova secao com design limpo (estilo steps/dicas) contendo:
+
+- Titulo: "Como extrair o melhor da sua IA"
+- Texto introdutorio: "Para obter respostas incriveis, nao faca perguntas genericas. Seja especifico! Nossos tutores foram treinados com milhares de horas de conteudo especializado."
+- 3 exemplos de "quebra-gelo" com botao de copiar cada um:
+  1. **Para o Tutor 1:** "Explique as Leis de Newton usando um exemplo do cotidiano que eu nunca mais va esquecer."
+  2. **Para o Tutor 2:** "Quais sao os 3 temas de atualidades mais quentes para citar em uma redacao sobre meio ambiente?"
+  3. **Para o Tutor 3:** "Estou comecando agora e tenho pouco tempo. Quais sao os 5 assuntos de Matematica que garantem minha base no TRI?"
+- Dica extra em destaque: "Voce tambem pode pedir para a IA 'Agir como um corretor de redacao' ou 'Criar um quiz de 5 perguntas sobre o tema X'."
+
+A secao usara componentes existentes (`Card`, `motion.div`) e icones do lucide-react (`Lightbulb`, `Copy`, `MessageSquare`). O layout sera responsivo, mantendo a identidade visual roxa/branca do site.
 
 ---
 
 ## Secao tecnica
 
-- Nenhuma biblioteca nova sera instalada (usa framer-motion e lucide-react ja existentes)
-- Nenhuma tabela de banco sera criada (pagina estatica com links externos)
-- Cards usam os componentes `Card` do shadcn/ui ja existentes
-- Badge usa o componente `Badge` ja existente
-- Estilo segue a identidade visual atual: gradientes roxo/verde/laranja, glassmorphism, sombras coloridas
-- Layout responsivo com grid Tailwind: `grid-cols-1 md:grid-cols-3`
+- Apenas 1 arquivo modificado: `src/pages/Tutors.tsx`
+- Nenhuma biblioteca nova instalada
+- Nenhuma tabela de banco criada ou alterada
+- Funcionalidade de "copiar texto" usa `navigator.clipboard.writeText()` nativo
+- Toast de confirmacao ao copiar usando `sonner` (ja instalado)
+- Navegacao e BottomNavigation permanecem inalterados
