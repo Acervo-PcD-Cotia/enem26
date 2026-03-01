@@ -55,17 +55,51 @@ export default function Dashboard() {
     setTaskLoading(true);
     const today = new Date().toISOString().split('T')[0];
 
-    // 1. Check overdue reviews
-    const { data: overdueReviews } = await supabase
-      .from("rpa_reviews")
-      .select("id, subject:subjects(name, discipline:disciplines(name, color))")
-      .eq("user_id", user?.id)
-      .eq("status", "pending")
-      .lt("scheduled_date", today)
-      .limit(1);
+    // Run all queries in parallel
+    const [overdueRes, todayRes, nextSubjectRes, completedRes, pendingRes] = await Promise.all([
+      supabase
+        .from("rpa_reviews")
+        .select("id, subject:subjects(name, discipline:disciplines(name, color))")
+        .eq("user_id", user?.id)
+        .eq("status", "pending")
+        .lt("scheduled_date", today)
+        .limit(1),
+      supabase
+        .from("rpa_reviews")
+        .select("id, subject:subjects(name, discipline:disciplines(name, color))")
+        .eq("user_id", user?.id)
+        .eq("status", "pending")
+        .eq("scheduled_date", today)
+        .limit(1),
+      supabase
+        .from("user_subject_progress")
+        .select("subject:subjects(name, discipline:disciplines(name, color))")
+        .eq("user_id", user?.id)
+        .eq("status", "studying")
+        .limit(1),
+      supabase
+        .from("rpa_reviews")
+        .select("id", { count: 'exact', head: true })
+        .eq("user_id", user?.id)
+        .eq("status", "completed")
+        .eq("completed_date", today),
+      supabase
+        .from("rpa_reviews")
+        .select("id", { count: 'exact', head: true })
+        .eq("user_id", user?.id)
+        .eq("status", "pending")
+        .lte("scheduled_date", today),
+    ]);
 
-    if (overdueReviews && overdueReviews.length > 0) {
-      const r: any = overdueReviews[0];
+    // Set progress
+    const done = completedRes.count || 0;
+    const pending = pendingRes.count || 0;
+    setCompletedToday(done);
+    setTotalToday(done + pending);
+
+    // Determine primary task
+    if (overdueRes.data && overdueRes.data.length > 0) {
+      const r: any = overdueRes.data[0];
       setPrimaryTask({
         type: 'overdue_review',
         title: `Revisão: ${r.subject?.name || 'Assunto'}`,
@@ -73,22 +107,8 @@ export default function Dashboard() {
         route: '/reviews',
         color: 'destructive',
       });
-      await fetchProgress(today);
-      setTaskLoading(false);
-      return;
-    }
-
-    // 2. Check today's reviews
-    const { data: todayReviews } = await supabase
-      .from("rpa_reviews")
-      .select("id, subject:subjects(name, discipline:disciplines(name, color))")
-      .eq("user_id", user?.id)
-      .eq("status", "pending")
-      .eq("scheduled_date", today)
-      .limit(1);
-
-    if (todayReviews && todayReviews.length > 0) {
-      const r: any = todayReviews[0];
+    } else if (todayRes.data && todayRes.data.length > 0) {
+      const r: any = todayRes.data[0];
       setPrimaryTask({
         type: 'today_review',
         title: `Revisão: ${r.subject?.name || 'Assunto'}`,
@@ -96,21 +116,8 @@ export default function Dashboard() {
         route: '/reviews',
         color: 'success',
       });
-      await fetchProgress(today);
-      setTaskLoading(false);
-      return;
-    }
-
-    // 3. Next subject in study trail
-    const { data: nextSubject } = await supabase
-      .from("user_subject_progress")
-      .select("subject:subjects(name, discipline:disciplines(name, color))")
-      .eq("user_id", user?.id)
-      .eq("status", "studying")
-      .limit(1);
-
-    if (nextSubject && nextSubject.length > 0) {
-      const s: any = nextSubject[0];
+    } else if (nextSubjectRes.data && nextSubjectRes.data.length > 0) {
+      const s: any = nextSubjectRes.data[0];
       setPrimaryTask({
         type: 'next_subject',
         title: s.subject?.name || 'Próximo assunto',
@@ -128,30 +135,7 @@ export default function Dashboard() {
       });
     }
 
-    await fetchProgress(today);
     setTaskLoading(false);
-  };
-
-  const fetchProgress = async (today: string) => {
-    // Count today's completed reviews + sessions
-    const { count: completedReviews } = await supabase
-      .from("rpa_reviews")
-      .select("id", { count: 'exact', head: true })
-      .eq("user_id", user?.id)
-      .eq("status", "completed")
-      .eq("completed_date", today);
-
-    const { count: pendingReviews } = await supabase
-      .from("rpa_reviews")
-      .select("id", { count: 'exact', head: true })
-      .eq("user_id", user?.id)
-      .eq("status", "pending")
-      .lte("scheduled_date", today);
-
-    const done = completedReviews || 0;
-    const pending = pendingReviews || 0;
-    setCompletedToday(done);
-    setTotalToday(done + pending);
   };
 
   const handleSignOut = async () => {
